@@ -46,7 +46,7 @@ prodev-ecommerce-backend/
 │   └── categories/    # Categories app
 ├── docs/
 │   ├── diagrams/      # ERD and design diagrams
-├── infrastructure/    # Docker, Kubernetes, CI/CD
+├── infra/    # Docker, Kubernetes, CI/CD
 │   ├── docker/
 │   └── k8s/
 ├── scripts/           # Helper scripts
