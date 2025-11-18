@@ -25,7 +25,7 @@ schema_view = get_schema_view(
     openapi.Info(
         title="ProDev E-Commerce API",
         default_version='v1',
-        description="API documentation for Nexus E-commerce Backend",
+        description="API documentation for ProDev E-commerce Backend",
     ),
     public=True,
     permission_classes=[permissions.AllowAny],
@@ -33,7 +33,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('docs/', schema_view.with_ui('swagger', cache_timeout=0)),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0)),
+    path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0)),
+    path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0)),
 
 ]
