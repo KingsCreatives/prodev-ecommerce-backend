@@ -42,9 +42,15 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'accounts',
-    'products',
+    'addresses',
+    'carts',
     'categories',
+    'notifications',
+    'orders',
+    'products',
 ]
+
+AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
