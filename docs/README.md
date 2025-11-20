@@ -1,8 +1,3 @@
-Below is a **clean, professional, no-emoji, copy-and-paste–ready README** for your `docs/` directory.
-I have **restructured**, **merged**, **organized**, and **removed redundancy** to produce a polished and consistent document.
-
----
-
 # Documentation Overview
 
 This directory contains all architectural, design, and development documentation for the **ProDev E-Commerce Backend** project. It serves as the central reference point for contributors, frontend developers, DevOps engineers, and reviewers.
