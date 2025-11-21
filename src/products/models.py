@@ -1,6 +1,4 @@
 from django.db import models
-
-# Create your models here.
 import uuid
 from django.db import models
 from django.utils.text import slugify
@@ -29,6 +27,10 @@ class Product(models.Model):
         constraints = [
             models.CheckConstraint(check=models.Q(price__gte=0), name="price_gte_0"),
             models.CheckConstraint(check=models.Q(stock__gte=0), name="stock_gte_0"),
+            models.CheckConstraint(
+                                check=models.Q(discount_percent__gte=0) & models.Q(discount_percent__lte=100),
+                                name="discount_between_0_and_100"
+                                )
         ]
         indexes = [
             models.Index(fields=["category"]),
@@ -47,6 +49,15 @@ class Product(models.Model):
                 slug = f"{base}-{i}"
             self.slug = slug
         super().save(*args, **kwargs)
+
+    @property
+    def primary_image_url(self):
+        primary = self.images.filter(is_primary=True).first()
+        if primary and primary.image:
+            return primary.image.url
+        if self.image:
+            return self.image.url
+        return None
 
     def __str__(self):
         return self.title
