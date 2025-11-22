@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from .models import Category
 from .serializers import CategorySerializer
-from core.permissions import IsAdminOrReadOnly
+from core import permissions
 from drf_yasg.utils import swagger_auto_schema
 from .docs import (
     list_summary, list_description, list_responses,
@@ -17,7 +17,7 @@ from .docs import (
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.IsAdminOrReadOnly]
 
     @swagger_auto_schema(
         operation_summary=list_summary,

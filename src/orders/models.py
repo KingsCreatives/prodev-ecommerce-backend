@@ -34,15 +34,15 @@ class Order(models.Model):
             models.Index(fields=["user"]),
             models.Index(fields=["status"]),
         ]
-    
+
     def update_total(self):
         total = sum(item.total_price for item in self.items.all())
         self.total_amount = total
         self.save(update_fields=["total_amount"])
 
-
     def __str__(self):
         return f"Order {self.id} - {self.get_status_display()}"
+
 
 class OrderItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -59,11 +59,8 @@ class OrderItem(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        self.total_price = self.unit_price * self.quantity
+        self.total_price = (self.unit_price or Decimal("0.00")) * self.quantity
         super().save(*args, **kwargs)
-        self.order.update_total()   
-
-
 
     def __str__(self):
         return f"{self.quantity} x {self.product} (Order {self.order.id})"

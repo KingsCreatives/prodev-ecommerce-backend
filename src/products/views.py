@@ -1,10 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.pagination import PageNumberPagination
 from drf_yasg.utils import swagger_auto_schema
 from .models import Product
 from .serializers import ProductSerializer
 from .filters import ProductFilter
 from core.permissions import IsAdminOrReadOnly
+from utils.pagination import StandardResultsSetPagination
 from .docs import (
     list_summary, list_description, list_responses,
     retrieve_summary, retrieve_description, retrieve_responses,
@@ -13,11 +13,6 @@ from .docs import (
     partial_update_summary, partial_update_description, partial_update_responses,
     delete_summary, delete_description, delete_responses
 )
-
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = "page_size"
-    max_page_size = 100
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.filter(is_deleted=False).select_related("category").prefetch_related("images")
