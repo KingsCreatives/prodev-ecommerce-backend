@@ -13,6 +13,7 @@ from .docs import (
     single_mark_read_summary, single_mark_read_description, single_mark_read_responses,
 )
 
+
 class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -27,7 +28,6 @@ class NotificationViewSet(viewsets.ModelViewSet):
             return qs.none()
         return qs.filter(user=user)
 
-
     @swagger_auto_schema(operation_summary=list_summary, operation_description=list_description, responses=list_responses, tags=["Notifications"])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -35,6 +35,22 @@ class NotificationViewSet(viewsets.ModelViewSet):
     @swagger_auto_schema(operation_summary="Retrieve notification", operation_description="Get a single notification", responses={200: NotificationSerializer()}, tags=["Notifications"])
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(tags=["Notifications"])
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(tags=["Notifications"])
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(tags=["Notifications"])
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(tags=["Notifications"])
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         if serializer.validated_data.get("user") is None:

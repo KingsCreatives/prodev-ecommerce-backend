@@ -15,6 +15,7 @@ from .docs import (
     update_summary, update_description, update_responses
 )
 
+
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -31,22 +32,50 @@ class OrderViewSet(viewsets.ModelViewSet):
             return qs.all()
         return qs.filter(user=user)
 
-
-    @swagger_auto_schema(operation_summary=list_summary, operation_description=list_description, responses=list_responses, tags=["Orders"])
+    @swagger_auto_schema(
+        operation_summary=list_summary,
+        operation_description=list_description,
+        responses=list_responses,
+        tags=["Orders"]
+    )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(operation_summary=retrieve_summary, operation_description=retrieve_description, responses=retrieve_responses, tags=["Orders"])
+    @swagger_auto_schema(
+        operation_summary=retrieve_summary,
+        operation_description=retrieve_description,
+        responses=retrieve_responses,
+        tags=["Orders"]
+    )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    @swagger_auto_schema(operation_summary=create_summary, operation_description=create_description, request_body=OrderSerializer, responses=create_responses, tags=["Orders"])
+    @swagger_auto_schema(
+        operation_summary=create_summary,
+        operation_description=create_description,
+        responses=create_responses,
+        tags=["Orders"]
+    )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @swagger_auto_schema(operation_summary=update_summary, operation_description=update_description, request_body=OrderSerializer, responses=update_responses, tags=["Orders"])
+    @swagger_auto_schema(
+        operation_summary=update_summary,
+        operation_description=update_description,
+        responses=update_responses,
+        tags=["Orders"]
+    )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
+    
+    @swagger_auto_schema(tags=["Orders"])
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(tags=["Orders"])
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
 
 
 class OrderItemViewSet(viewsets.ModelViewSet):
@@ -64,7 +93,6 @@ class OrderItemViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return qs.all()
         return qs.filter(order__user=user)
-
 
     def perform_create(self, serializer):
         order_id = serializer.validated_data.pop("order_id")
@@ -84,7 +112,7 @@ class OrderItemViewSet(viewsets.ModelViewSet):
             unit_price = product.price
 
             item = OrderItem(order=order, product=product, quantity=quantity, unit_price=unit_price)
-            item.save()  # OrderItem.save computes total_price
+            item.save()  # total_price is computed inside save()
 
             order.update_total()
 
@@ -109,10 +137,20 @@ class OrderItemViewSet(viewsets.ModelViewSet):
             instance.delete()
             order.update_total()
 
-    @swagger_auto_schema(operation_summary=order_item_create_summary, operation_description=order_item_create_description, request_body=OrderItemSerializer, responses=order_item_create_responses, tags=["Orders"])
+    @swagger_auto_schema(
+        operation_summary=order_item_create_summary,
+        operation_description=order_item_create_description,
+        responses=order_item_create_responses,
+        tags=["Orders"]
+    )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @swagger_auto_schema(operation_summary="Update order item", operation_description="Update an order item quantity", request_body=OrderItemSerializer, responses={200: OrderItemSerializer()}, tags=["Orders"])
+    @swagger_auto_schema(
+        operation_summary="Update order item",
+        operation_description="Update an order item quantity",
+        responses={200: OrderItemSerializer()},
+        tags=["Orders"]
+    )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)

@@ -17,6 +17,12 @@ update_summary = "Update address"
 update_description = "Update an address. Only the owner or admin may update."
 update_responses = {200: AddressSerializer(), 403: openapi.Response("Forbidden")}
 
+partial_update_summary = "Partially update address"
+partial_update_description = "Update one or more fields of an existing address. Only the owner or admin may update."
+parital_update_responses ={200: AddressSerializer(), 403: openapi.Response("Forbidden")}
+
 delete_summary = "Delete address"
 delete_description = "Delete an address. Only the owner or admin may delete."
 delete_responses = {204: openapi.Response("Deleted"), 403: openapi.Response("Forbidden")}
+
+

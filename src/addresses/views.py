@@ -9,6 +9,7 @@ from .docs import (
     retrieve_summary, retrieve_description, retrieve_responses,
     create_summary, create_description, create_responses,
     update_summary, update_description, update_responses,
+    partial_update_summary, partial_update_description, parital_update_responses,
     delete_summary, delete_description, delete_responses,
 )
 class AddressViewSet(viewsets.ModelViewSet):
@@ -39,13 +40,24 @@ class AddressViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    @swagger_auto_schema(operation_summary=create_summary, operation_description=create_description, request_body=AddressSerializer, responses=create_responses, tags=["Addresses"])
+    @swagger_auto_schema(
+            operation_summary=create_summary, 
+            operation_description=create_description, 
+            request_body=AddressSerializer, 
+            responses=create_responses, 
+            tags=["Addresses"])
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
     @swagger_auto_schema(operation_summary=update_summary, operation_description=update_description, request_body=AddressSerializer, responses=update_responses, tags=["Addresses"])
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(operation_summary=partial_update_summary,operation_description=partial_update_description,
+     request_body=AddressSerializer,
+     responses=parital_update_responses, tags=["Addresses"])
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
 
     @swagger_auto_schema(operation_summary=delete_summary, operation_description=delete_description, responses=delete_responses, tags=["Addresses"])
     def destroy(self, request, *args, **kwargs):
