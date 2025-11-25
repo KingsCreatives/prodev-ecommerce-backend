@@ -6,6 +6,7 @@ from core.permissions import IsAdminOrReadOnly
 from utils.pagination import StandardResultsSetPagination
 from .models import Product, ProductImage
 from .filters import ProductFilter
+from notifications.tasks import send_new_product_notification
 from .serializers import (
     ProductSerializer, 
     ProductImageSerializer, 
@@ -100,6 +101,10 @@ class ProductViewSet(ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+    
+    def perform_create(self, serializer):
+        product = serializer.save()
+        transaction.on_commit(lambda: send_new_product_notification.delay(str(product.id)))
 
 
 class ProductImageViewSet(ModelViewSet):
