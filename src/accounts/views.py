@@ -2,7 +2,7 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, UserSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .serializers import RegisterSerializer
@@ -42,10 +42,5 @@ class MeView(APIView):
         tags=["Authentication"],
     )
     def get(self, request):
-        user = request.user
-        data = {
-            "id" : str(user.id),
-            "email" : user.email,
-            "username" : getattr(user, "username", None)
-        }
-        return Response(data, status=status.HTTP_200_OK)
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
