@@ -14,13 +14,13 @@ class ProductAPITestCase(APITestCase):
         self.user = User.objects.create_user(
             email="user@test.com",
             username="user",
-            password="password123"
+            password="StrongPassword123!"
         )
 
         self.admin = User.objects.create_superuser(
             email="admin@test.com",
             username="admin",
-            password="password123"
+            password="StrongPassword123!"
         )
 
         self.cat_electronics = Category.objects.create(
@@ -80,7 +80,6 @@ class ProductAPITestCase(APITestCase):
     def test_list_products_paginated(self):
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # standard paginated response should include 'results'
         self.assertIn("results", response.data)
         self.assertIsInstance(response.data["results"], list)
 
@@ -94,7 +93,7 @@ class ProductAPITestCase(APITestCase):
         response = self.client.get(self.list_url, {"price_min": "1000", "price_max": "2000"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         prices = [float(p["price"]) for p in response.data["results"]]
-        # All returned prices must be within provided range
+       
         for price in prices:
             self.assertGreaterEqual(price, 1000.0)
             self.assertLessEqual(price, 2000.0)
@@ -103,15 +102,12 @@ class ProductAPITestCase(APITestCase):
         response = self.client.get(self.list_url, {"category": "electronics"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         for p in response.data["results"]:
-            # category may be returned as id or nested object depending on serializer,
-            # check for presence of category field in response
             self.assertIn("category", p)
 
     def test_in_stock_filter(self):
         response = self.client.get(self.list_url, {"in_stock": "true"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         for p in response.data["results"]:
-            # ensure stock > 0 for returned items
             self.assertGreater(int(p.get("stock", 0)), 0)
 
     def test_ordering_by_price_desc(self):
@@ -130,8 +126,7 @@ class ProductAPITestCase(APITestCase):
             "price": "99.99",
             "stock": 10
         }
-        response = self.client.post(self.list_url, data, format="json")
-        # non-admin should be forbidden (or unauthorized depending on auth config)
+        response = self.client.post(self.list_url, data, format="multipart")
         self.assertIn(response.status_code, (status.HTTP_403_FORBIDDEN, status.HTTP_401_UNAUTHORIZED))
 
     def test_admin_can_create_product(self):
@@ -143,6 +138,21 @@ class ProductAPITestCase(APITestCase):
             "price": "199.99",
             "stock": 5
         }
-        response = self.client.post(self.list_url, data, format="json")
+        response = self.client.post(self.list_url, data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["title"], "Admin Product")
+
+    def test_soft_delete(self):
+        self.client.force_authenticate(user=self.admin)
+        product = Product.objects.first()
+        url = f"{self.list_url}{product.id}/"
+        
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        product.refresh_from_db()
+        self.assertTrue(product.is_deleted)
+        
+        resp = self.client.get(self.list_url)
+        ids = [r["id"] for r in resp.data["results"]]
+        self.assertNotIn(str(product.id), ids)

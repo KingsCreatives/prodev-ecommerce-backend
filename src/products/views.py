@@ -38,9 +38,14 @@ class ProductViewSet(ModelViewSet):
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Product.objects.none()
+    
         return Product.objects.filter(is_deleted=False)\
             .select_related("category")\
             .prefetch_related("images")
+
+    def perform_destroy(self, instance):
+        instance.is_deleted = True
+        instance.save()
 
     @swagger_auto_schema(
         operation_summary=list_summary, 
