@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from .models import Category
 from .serializers import CategorySerializer
 from core import permissions
+from utils.pagination import StandardResultsSetPagination
 from drf_yasg.utils import swagger_auto_schema
 from .docs import (
     list_summary, list_description, list_responses,
@@ -16,6 +17,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAdminOrReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     @swagger_auto_schema(operation_summary=list_summary, operation_description=list_description, responses=list_responses, tags=["Categories"])
     def list(self, request, *args, **kwargs):
