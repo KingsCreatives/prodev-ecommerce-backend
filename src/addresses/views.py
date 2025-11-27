@@ -3,7 +3,8 @@ from drf_yasg.utils import swagger_auto_schema
 
 from .models import Address
 from .serializers import AddressSerializer
-from utils.pagination import StandardResultsSetPagination
+# Ensure utils/pagination.py exists, or comment this out and remove pagination_class line
+from utils.pagination import StandardResultsSetPagination 
 from .docs import (
     list_summary, list_description, list_responses,
     retrieve_summary, retrieve_description, retrieve_responses,
@@ -12,6 +13,7 @@ from .docs import (
     partial_update_summary, partial_update_description, parital_update_responses,
     delete_summary, delete_description, delete_responses,
 )
+
 class AddressViewSet(viewsets.ModelViewSet):
     serializer_class = AddressSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -21,16 +23,26 @@ class AddressViewSet(viewsets.ModelViewSet):
         qs = Address.objects.select_related("user")
         if getattr(self, "swagger_fake_view", False):
             return qs.none()
-        user = getattr(self.request, "user", None)
-        if user is None or not getattr(user, "is_authenticated", False):
+        
+        user = self.request.user
+        if not user.is_authenticated:
             return qs.none()
+            
         if user.is_staff:
             return qs.all()
         return qs.filter(user=user)
 
-
     def perform_create(self, serializer):
+        if serializer.validated_data.get('is_default', False):
+            Address.objects.filter(user=self.request.user, is_default=True).update(is_default=False)
+            
         serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        if serializer.validated_data.get('is_default', False):
+             Address.objects.filter(user=self.request.user, is_default=True).exclude(id=serializer.instance.id).update(is_default=False)
+        
+        serializer.save()
 
     @swagger_auto_schema(operation_summary=list_summary, operation_description=list_description, responses=list_responses, tags=["Addresses"])
     def list(self, request, *args, **kwargs):
