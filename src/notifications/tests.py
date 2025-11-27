@@ -7,11 +7,10 @@ from notifications.models import Notification
 
 User = get_user_model()
 
-
 class NotificationsAPITestCase(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(email="user@test.com", username="user", password="password123")
-        self.other = User.objects.create_user(email="other@test.com", username="other", password="password123")
+        self.user = User.objects.create_user(email="user@test.com", username="user", password="StrongPassword123!")
+        self.other = User.objects.create_user(email="other@test.com", username="other", password="StrongPassword123!")
 
         Notification.objects.create(id=uuid4(), user=self.user, notif_type="order", title="Order placed", message="Order #1")
         Notification.objects.create(id=uuid4(), user=self.user, notif_type="system", title="Welcome", message="Welcome msg")
@@ -21,7 +20,9 @@ class NotificationsAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         resp = self.client.get("/api/notifications/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        ids = [n["id"] for n in resp.data.get("results", [])]
+
+        results = resp.data.get("results", resp.data)
+        ids = [n["id"] for n in results]
         self.assertTrue(len(ids) >= 2)
 
     def test_mark_read_single(self):
@@ -35,6 +36,9 @@ class NotificationsAPITestCase(APITestCase):
     def test_mark_read_bulk(self):
         self.client.force_authenticate(user=self.user)
         notifs = Notification.objects.filter(user=self.user).values_list("id", flat=True)
-        resp = self.client.post("/api/notifications/mark-read/", {"ids": list(notifs)}, format="json")
+    
+        ids_list = [str(uid) for uid in notifs]
+        
+        resp = self.client.post("/api/notifications/mark-read/", {"ids": ids_list}, format="json")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(resp.data.get("updated", None), len(list(notifs)))
+        self.assertEqual(resp.data.get("updated", 0), len(ids_list))
