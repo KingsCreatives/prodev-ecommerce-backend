@@ -25,6 +25,7 @@ class CartItem(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["cart", "product"], name="unique_product_in_cart")
         ]
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.quantity} x {self.product.title}"

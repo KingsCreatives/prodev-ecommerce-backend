@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import permissions
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 from utils.pagination import StandardResultsSetPagination
 from django.db import transaction
 from drf_yasg.utils import swagger_auto_schema
@@ -14,7 +15,6 @@ from .docs import (
     cart_item_update_summary, cart_item_update_description, cart_item_update_responses,
 )
 
-
 class CartViewSet(ModelViewSet):
     serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -24,15 +24,16 @@ class CartViewSet(ModelViewSet):
         qs = Cart.objects.select_related("user").prefetch_related("items__product")
         if getattr(self, "swagger_fake_view", False):
             return qs.none()
-        user = getattr(self.request, "user", None)
-        if user is None or not getattr(user, "is_authenticated", False):
-            return qs.none()
+        
+        user = self.request.user
         if user.is_staff:
             return qs.all()
         return qs.filter(user=user)
     
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def create(self, request, *args, **kwargs):
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data)
 
     @swagger_auto_schema(operation_summary=cart_list_summary, operation_description=cart_list_description, responses=cart_list_responses, tags=["Carts"])
     def list(self, request, *args, **kwargs):
@@ -42,10 +43,6 @@ class CartViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
     
-    @swagger_auto_schema(tags=["Carts"])
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
     @swagger_auto_schema(tags=["Carts"])
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
@@ -68,28 +65,20 @@ class CartItemViewSet(ModelViewSet):
         qs = CartItem.objects.select_related("cart", "product")
         if getattr(self, "swagger_fake_view", False):
             return qs.none()
-        user = getattr(self.request, "user", None)
-        if user is None or not getattr(user, "is_authenticated", False):
-            return qs.none()
+        user = self.request.user
         if user.is_staff:
             return qs.all()
         return qs.filter(cart__user=user)
 
-    @swagger_auto_schema(operation_summary=cart_item_create_summary, operation_description=cart_item_create_description, responses=cart_item_create_responses, tags=["Cart-Item"])
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
     def perform_create(self, serializer):
         user = self.request.user
-        product_id = serializer.validated_data.pop("product_id")
+        product = serializer.validated_data.pop('product_obj') 
+        serializer.validated_data.pop('product_id', None)
+
         quantity = serializer.validated_data.get("quantity", 1)
 
         with transaction.atomic():
-            try:
-                product = Product.objects.select_for_update().get(pk=product_id)
-            except Product.DoesNotExist:
-                raise ValidationError({"product_id": "Product does not exist."})
-
+            product = Product.objects.select_for_update().get(pk=product.id)
             cart, _ = Cart.objects.select_for_update().get_or_create(user=user)
 
             if hasattr(product, "stock") and product.stock < quantity:
@@ -100,12 +89,28 @@ class CartItemViewSet(ModelViewSet):
                 item = item_qs.get()
                 new_qty = item.quantity + quantity
                 if hasattr(product, "stock") and product.stock < new_qty:
-                    raise ValidationError({"quantity": "Not enough stock available for requested total quantity."})
+                    raise ValidationError({"quantity": "Not enough stock available for total quantity."})
                 item.quantity = new_qty
                 item.save()
-                serializer.instance = item
             else:
                 serializer.save(cart=cart, product=product)
+
+    def perform_update(self, serializer):
+        quantity = serializer.validated_data.get("quantity")
+        instance = serializer.instance
+
+        if quantity is not None:
+             with transaction.atomic():
+                product = Product.objects.select_for_update().get(pk=instance.product.id)
+                if hasattr(product, "stock") and product.stock < quantity:
+                     raise ValidationError({"quantity": "Not enough stock available."})
+                serializer.save()
+        else:
+            serializer.save()
+
+    @swagger_auto_schema(operation_summary=cart_item_create_summary, operation_description=cart_item_create_description, responses=cart_item_create_responses, tags=["Cart-Item"])
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
     @swagger_auto_schema(operation_summary=cart_item_update_summary, operation_description=cart_item_update_description, responses=cart_item_update_responses, tags=["Cart-Item"])
     def update(self, request, *args, **kwargs):
