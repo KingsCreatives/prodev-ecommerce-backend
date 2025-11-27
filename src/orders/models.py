@@ -53,6 +53,7 @@ class OrderItem(models.Model):
     total_price = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
     class Meta:
+        ordering = ["id"]
         indexes = [
             models.Index(fields=["order"]),
             models.Index(fields=["product"]),

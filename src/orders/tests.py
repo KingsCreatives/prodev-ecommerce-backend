@@ -1,5 +1,4 @@
 from uuid import uuid4
-from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
@@ -13,9 +12,9 @@ User = get_user_model()
 
 class OrdersAPITestCase(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(email="user@test.com", username="user", password="password123")
-        self.other = User.objects.create_user(email="other@test.com", username="other", password="password123")
-        self.admin = User.objects.create_superuser(email="admin@test.com", username="admin", password="password123")
+        self.user = User.objects.create_user(email="user@test.com", username="user", password="StrongPassword123!")
+        self.other = User.objects.create_user(email="other@test.com", username="other", password="StrongPassword123!")
+        self.admin = User.objects.create_superuser(email="admin@test.com", username="admin", password="StrongPassword123!")
 
         self.cat = Category.objects.create(id=uuid4(), name="Electronics", slug="electronics")
         self.p1 = Product.objects.create(id=uuid4(), title="Prod A", slug="prod-a", category=self.cat, price=100, stock=10)
@@ -31,7 +30,8 @@ class OrdersAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         resp = self.client.get("/api/orders/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        ids = [o["id"] for o in resp.data.get("results", [])]
+        results = resp.data.get("results", resp.data)
+        ids = [o["id"] for o in results]
         self.assertIn(str(self.order1.id), ids)
         self.assertNotIn(str(self.order2.id), ids)
 
@@ -39,7 +39,8 @@ class OrdersAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.admin)
         resp = self.client.get("/api/orders/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        ids = [o["id"] for o in resp.data.get("results", [])]
+        results = resp.data.get("results", resp.data)
+        ids = [o["id"] for o in results]
         self.assertIn(str(self.order1.id), ids)
         self.assertIn(str(self.order2.id), ids)
 
