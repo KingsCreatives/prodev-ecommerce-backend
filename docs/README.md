@@ -2,21 +2,21 @@
 
 This directory contains all architectural, design, and development documentation for the **ProDev E-Commerce Backend** project. It serves as the central reference point for contributors, frontend developers, DevOps engineers, and reviewers.
 
----
-
 ## Folder Structure
 
 ```
+
 docs/
 │
 ├── diagrams/
 │    ├── erd.png
-│    └── (future diagrams)
+│    └── architecture.png (Planned)
 │
 ├── api/
 │    └── postman_collection.json
 │
 └── README.md
+
 ```
 
 ---
@@ -25,235 +25,153 @@ docs/
 
 The ERD provides a complete overview of all database entities and their relationships, including:
 
-* Users
-* Categories
-* Cart and Cart Items
-* Products and Product Images
-* Orders and Order Items
-* Addresses
-* Notifications
+- Users (Custom Model)  
+- Categories & Products  
+- Cart & Cart Items  
+- Orders & Order Items  
+- Addresses & Notifications  
 
-Location: `docs/diagrams/erd.png`
-
-The ERD is the authoritative source for all database design and relationships across the system.
+**Location:** `docs/diagrams/erd.png`
 
 ---
 
-## 2. Architecture Notes (Coming Soon)
+## 2. Architecture Notes
 
-This section will include detailed documentation on:
+This section outlines the core technical decisions and architectural patterns used in the system.
 
-* Backend architecture (Django + Django REST Framework)
-* Authentication and authorization workflow (JWT)
-* Asynchronous processing with Celery and RabbitMQ
-* File storage strategy (local and cloud)
-* Notification workflow (email + in-app notifications)
-* CI/CD pipeline overview (GitHub Actions + Jenkins)
-* Deployment model (Docker + Kubernetes)
+### Backend Architecture (Django + DRF)
+
+The system is built on **Django 5** and **Django REST Framework (DRF)**, using a modular, domain-driven design approach.
+
+Key architectural decisions:
+
+- **App-Based Structure:** Functionality is separated into independent apps (accounts, products, orders, notifications) to maintain separation of concerns.  
+- **ViewSets:** Use of `ModelViewSet` to standardize CRUD operations and reduce boilerplate.  
+- **Serializers:** Nested serializers provide rich API responses (e.g., orders include items and product details).  
+- **Service Layer Pattern:** Complex business logic (e.g., atomic order creation, stock adjustments) is placed in model methods or service functions to keep views simple.
+
+---
+
+### Authentication & Authorization (JWT)
+
+Security is implemented using **JSON Web Tokens (JWT)** via the `simplejwt` library.
+
+- **Stateless Authentication:** The server holds no session state, improving scalability.  
+- **Token Lifecycle:**  
+  - Access Token: Short-lived (15 minutes) for API authorization  
+  - Refresh Token: Long-lived (7 days) for obtaining new access tokens  
+- **RBAC (Role-Based Access Control):** Custom permissions (e.g., `IsAdminOrReadOnly`) enforce strict access rules between Customers and Administrators.
+
+---
+
+### Asynchronous Processing (Celery + RabbitMQ)
+
+To maintain fast API responses, heavy tasks are offloaded to background workers.
+
+- **Broker:** RabbitMQ queues tasks from Django.  
+- **Worker:** Celery workers process queued tasks asynchronously.  
+- **Use Cases:**  
+  - Sending welcome emails  
+  - Sending "New Product" alerts  
+  - Periodic database cleanup (Celery Beat)
+
+---
+
+### File Storage Strategy
+
+Media files (e.g., product images) are handled differently in development and production.
+
+- **Local (Development):** Stored in a `media/` volume.  
+- **Cloud (Production):** Stored using Cloudinary for persistence and CDN delivery.
+
+Reason: Kubernetes pods are ephemeral; local files are wiped on restart, so cloud storage ensures persistence.
+
+---
+
+### Notification Workflow
+
+The system uses a hybrid notification strategy:
+
+- **In-App Notifications:**  
+  - Stored in PostgreSQL  
+  - Users can poll via API  
+  - Mark as read (single or bulk)
+
+- **Email Notifications:**  
+  - Sent asynchronously via Celery  
+  - Reserved for critical alerts
+
+---
+
+### CI/CD Pipeline (GitHub Actions + Jenkins)
+
+The system uses a split continuous integration and deployment pipeline.
+
+#### GitHub Actions (CI)
+
+Triggered on every Pull Request:
+
+- Runs linting (`flake8`)  
+- Executes unit tests (`python manage.py test`)  
+- Blocks merge if tests fail  
+
+#### Jenkins (CD)
+
+Triggered on merge to `main`:
+
+- Builds Docker image  
+- Pushes image to Docker Hub  
+- Performs a rolling update on the Kubernetes cluster  
+
+---
+
+### Deployment Model (Docker + Kubernetes)
+
+The application is cloud-agnostic and scalable.
+
+#### Containerization
+
+- Multi-stage Dockerfile  
+- Produces a lightweight production-ready image running Gunicorn  
+
+#### Kubernetes
+
+- **Stateless Apps:** Django Web and Celery Workers run as Deployments (ReplicaSets)  
+- **Stateful Services:** PostgreSQL, Redis, RabbitMQ run as StatefulSets with PVCs  
+- **Configuration Management:** ConfigMaps and Secrets store environment variables, keeping sensitive values out of the image  
 
 ---
 
 ## 3. API Documentation
 
-Complete API documentation will be available through:
+Complete API documentation is auto-generated and interactive.
 
-* Swagger/OpenAPI documentation generated at `/api/docs/`
-* Postman/Thunder Client collection
-
-Postman collection location:
-`docs/api/postman_collection.json`
+- **Swagger UI:** `/docs/`  
+- **ReDoc:** `/redoc/`  
+- **Postman Collection:** `docs/api/postman_collection.json`  
 
 ---
 
 ## 4. System Workflows
 
-This section documents major workflows within the system, including:
+### User Registration Flow
 
-* User registration and authentication
-* Product management flow
-* Order lifecycle and status updates
-* Stock tracking and adjustment
-* Notification dispatch (email and in-app)
-
----
-
-# Authentication and Authorization (JWT)
-
-The backend uses **JSON Web Tokens (JWT)** for authentication.
-Tokens are managed using `djangorestframework-simplejwt`.
-
-All protected endpoints require:
-
-```
-Authorization: Bearer <access_token>
-```
+1. User submits credentials to `/api/auth/register/`.  
+2. Server validates data and creates the User record.  
+3. Celery task sends a welcome email.  
+4. In-app welcome notification is created.  
+5. API returns **HTTP 201 Created**.
 
 ---
 
-## Endpoints Overview
+### Order Creation Flow
 
-| Endpoint              | Method | Description                               | Auth Required |
-| --------------------- | ------ | ----------------------------------------- | ------------- |
-| `/api/auth/register/` | POST   | Create a new user account                 | No            |
-| `/api/token/`         | POST   | Obtain access and refresh JWT tokens      | No            |
-| `/api/token/refresh/` | POST   | Refresh access token                      | No            |
-| `/api/auth/me/`       | GET    | Retrieve the authenticated user's profile | Yes           |
+1. User submits checkout request.  
+2. Atomic transaction begins; stock rows are locked.  
+3. Server validates stock availability.  
+4. Order and OrderItem records are created.  
+5. Product prices are duplicated into OrderItem to freeze cost.  
+6. Cart is cleared.  
+7. In-app notification "Order Placed" is generated.  
+8. Transaction commits.  
 
----
-
-## Registration
-
-**POST** `/api/auth/register/`
-
-Request:
-
-```json
-{
-  "email": "user@example.com",
-  "username": "myusername",
-  "password": "securepassword123"
-}
-```
-
-Success response (201 Created):
-
-```json
-{
-  "message": "User created successfully."
-}
-```
-#### Password rules : It must be atleast 8 character, must not be similar to your email, it cannot be a common password and you can't use only numbers as well.
----
-
-## Login (Obtain JWT Tokens)
-
-**POST** `/api/token/`
-
-Request:
-
-```json
-{
-  "email": "user@example.com",
-  "password": "securepassword123"
-}
-```
-
-Response:
-
-```json
-{
-  "refresh": "xxxx.yyyy.zzzz",
-  "access": "aaaa.bbbb.cccc"
-}
-```
-
-Use the access token on protected endpoints:
-
-```
-Authorization: Bearer <access_token>
-```
-
----
-
-## Refresh Token
-
-**POST** `/api/token/refresh/`
-
-Request:
-
-```json
-{
-  "refresh": "your-refresh-token-here"
-}
-```
-
-Response:
-
-```json
-{
-  "access": "new-access-token"
-}
-```
-
----
-
-## Get Current User
-
-**GET** `/api/auth/me/`
-
-Headers:
-
-```
-Authorization: Bearer <access_token>
-```
-
-Response:
-
-```json
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "username": "myusername"
-}
-```
-
----
-
-## Permissions
-
-### IsAdminOrReadOnly
-
-* GET, HEAD, and OPTIONS are available to all users.
-* POST, PUT, PATCH, DELETE require admin/staff privileges.
-
-Used primarily for product and category management.
-
-### IsAuthenticated
-
-Default for protected endpoints.
-A valid access token must be present in the `Authorization` header.
-
----
-
-## JWT Settings (SimpleJWT)
-
-```python
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
-}
-```
-
----
-
-## Testing the Authentication Flow
-
-Using Postman or Thunder Client:
-
-1. Register a user
-2. Log in to obtain access and refresh tokens
-3. Access `/api/auth/me/` with the access token
-4. Refresh the access token via `/api/token/refresh/`
-
----
-
-## Postman Collection
-
-A sample Postman collection for testing authentication endpoints is located at:
-
-```
-docs/api/postman_collection.json
-```
-
----
-
-## Purpose of This Documentation
-
-This documentation exists to:
-
-* Provide a reference for backend contributors
-* Support frontend development with accurate API specifications
-* Assist DevOps teams during deployment
-* Serve as a reliable resource during debugging and feature development
