@@ -5,7 +5,7 @@ databases:
     plan: free
 
 services:
-  
+  # 1. Combined Web + Worker Service
   - type: web
     name: prodev-backend
     env: docker
@@ -54,7 +54,7 @@ services:
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
         value: "*"
-      
+      # SECURE: Ensure these are set in Render Dashboard
       - key: DJANGO_SECRET_KEY
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
@@ -63,66 +63,12 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-    
-    dockerCommand: "python -m gunicorn src.core.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
+    # FIX: Run Celery in background (&) then Gunicorn in foreground. 
+    # Using sh -c avoids permission issues with external script files.
+    dockerCommand: "sh -c 'celery -A src.core.celery worker --loglevel=info & gunicorn src.core.wsgi:application --bind 0.0.0.0:$PORT --workers 2'"
 
+  # 2. Redis Service
   - type: redis
     name: prodev-redis
     plan: free
-    ipAllowList: [] 
-
-  
-  - type: worker
-    name: prodev-worker
-    env: docker
-    dockerContext: .
-    dockerfilePath: infra/docker/Dockerfile
-    plan: free
-    envVars:
-      - key: POSTGRES_DB
-        fromDatabase:
-          name: prodev_db
-          property: database
-      - key: POSTGRES_USER
-        fromDatabase:
-          name: prodev_db
-          property: user
-      - key: POSTGRES_PASSWORD
-        fromDatabase:
-          name: prodev_db
-          property: password
-      - key: POSTGRES_HOST
-        fromDatabase:
-          name: prodev_db
-          property: host
-      - key: POSTGRES_PORT
-        fromDatabase:
-          name: prodev_db
-          property: port
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: prodev-redis
-          property: connectionString
-      - key: CELERY_BROKER_URL
-        fromService:
-          type: redis
-          name: prodev-redis
-          property: connectionString
-      - key: CELERY_RESULT_BACKEND
-        fromService:
-          type: redis
-          name: prodev-redis
-          property: connectionString
-      - key: DJANGO_SETTINGS_MODULE
-        value: src.core.settings
-      - key: DJANGO_SECRET_KEY
-        sync: false
-      - key: CLOUDINARY_CLOUD_NAME
-        sync: false
-      - key: CLOUDINARY_API_KEY
-        sync: false
-      - key: CLOUDINARY_API_SECRET
-        sync: false
-    
-    dockerCommand: "celery -A src.core.celery worker --loglevel=info"
+    ipAllowList: []
