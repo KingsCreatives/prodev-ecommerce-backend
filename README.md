@@ -1,161 +1,152 @@
-# ProDev E-Commerce Backend
+# ProDev Nexus E-Commerce Backend
 
 ## Overview
-The **ProDev Nexus E-Commerce Backend** is a fully functional backend system for an e-commerce platform. It demonstrates advanced backend development skills using **Django**, **PostgreSQL**, and **Django REST Framework**.  
 
-This project simulates a real-world environment and includes:
+The ProDev Nexus E-Commerce Backend is a production-grade, scalable API built for modern e-commerce platforms. It leverages Django 5 and Django REST Framework to provide a robust suite of features including secure authentication, product management, real-time notifications, and atomic order processing.
 
-- CRUD APIs for products, categories, and users
-- JWT-based authentication and authorization
-- Filtering, sorting, and pagination for product discovery
-- API documentation using **Swagger/OpenAPI**
-- Plans for background tasks, container orchestration, and CI/CD
+The system is designed with data integrity and concurrency in mind, utilizing atomic transactions, row-level locking, and asynchronous background processing. It is fully containerized and ready for orchestration via Kubernetes.
 
----
+## Key Features
 
-## Project Goals
+- **Authentication**: Secure JWT-based auth with custom user models and role-based access control (Admin vs. Customer).
+- **Product Catalog**: Advanced CRUD with image uploads (Cloudinary), soft-delete functionality, and filtering (price, category, stock).
+- **Shopping Cart**: Persistent server-side cart with atomic stock validation to prevent race conditions.
+- **Order Processing**: Atomic order creation with price snapshotting and automatic stock adjustment.
+- **Notifications**: Dual-channel system (In-App + Email) powered by Celery & RabbitMQ.
+- **Infrastructure**: Fully dockerized environment with Nginx/Gunicorn, PostgreSQL, Redis, and RabbitMQ.
+- **CI/CD**: Automated testing and deployment pipelines using GitHub Actions and Jenkins.
 
-- Build scalable and maintainable backend architecture
-- Implement secure user authentication
-- Optimize database design and queries
-- Document APIs for frontend consumption
-- Prepare for real-world deployment (Docker, Kubernetes, Jenkins)
+## Technology Stack
 
----
-
-## Technologies Used
-
-- **Backend:** Django, Django REST Framework  
-- **Database:** PostgreSQL  
-- **Authentication:** JWT (JSON Web Tokens)  
-- **API Documentation:** Swagger / DRF-YASG  
-- **Task Queue (future):** Celery + RabbitMQ  
-- **Deployment (future):** Docker, Kubernetes  
-- **CI/CD (future):** Jenkins  
-
----
+- **Language**: Python 3.11
+- **Framework**: Django 5.x, Django REST Framework
+- **Database**: PostgreSQL 15
+- **Caching & Broker**: Redis
+- **Message Queue**: RabbitMQ
+- **Asynchronous Tasks**: Celery
+- **Containerization**: Docker, Docker Compose
+- **Orchestration**: Kubernetes (K8s)
+- **CI/CD**: Jenkins, GitHub Actions
 
 ## Project Structure
 
 ```
 prodev-ecommerce-backend/
-├── src/
-│   ├── core/          # Django project settings
-│   ├── accounts/      # User app
-│   ├── products/      # Products app
-│   └── categories/    # Categories app
-├── docs/
-│   ├── diagrams/      # ERD and design diagrams
-├── infra/    # Docker, Kubernetes, CI/CD
-│   ├── docker/
-│   └── k8s/
-├── scripts/           # Helper scripts
-├── requirements.txt   # Python dependencies
-└── README.md
+├── src/               # Application Source Code
+│   ├── core/          # Project settings & config
+│   ├── accounts/      # User management & Auth
+│   ├── products/      # Product catalog & Images
+│   ├── carts/         # Shopping cart logic
+│   ├── orders/        # Order processing
+│   └── notifications/ # In-app alerts
+├── infra/             # Infrastructure Configuration
+│   ├── docker/        # Dockerfiles & Compose
+│   ├── k8s/           # Kubernetes Manifests
+│   └── jenkins/       # Local Jenkins Server
+├── docs/              # Detailed Documentation
+│   ├── diagrams/      # Architecture & ERD
+│   └── api/           # Postman Collections
+└── scripts/           # Automation Scripts
 ```
 
----
+## Setup & Installation
 
-## Setup Instructions
+### Option 1: Docker (Recommended)
 
-1. **Clone the repository**
-   ```bash
-   git clone <repo-url>
-   cd prodev-ecommerce-backend/src
-   ```
+This sets up the entire stack (Web, DB, Redis, RabbitMQ) automatically.
 
-2. **Create a virtual environment**
-   ```bash
-   python -m venv env
-   source env/bin/activate   # macOS/Linux
-   env\Scripts\activate      # Windows
-   ```
+**Clone the Repo:**
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+git clone <repo-url>
+cd prodev-ecommerce-backend
+```
 
-4. **Configure PostgreSQL database**
-   Update `.env` and `settings.py` with your credentials:
-   ```text
-   DB_NAME=ecommerce_db
-   DB_USER=postgres
-   DB_PASSWORD=<your-password>
-   DB_HOST=localhost
-   DB_PORT=5432
-   ```
+**Configure Environment:**
 
-5. **Run initial migrations**
-   ```bash
-   python manage.py migrate
-   ```
+```bash
+cd infra/docker
+cp .env.example .env
+# Ensure POSTGRES_HOST=db in .env
+```
 
-6. **Run the development server**
-   ```bash
-   python manage.py runserver
-   ```
+**Start Services:**
 
-7. **Check API documentation**
-   * Swagger: [http://127.0.0.1:8000/docs/](http://127.0.0.1:8000/docs/)
-   * Redoc: [http://127.0.0.1:8000/redoc/](http://127.0.0.1:8000/redoc/)
+```bash
+docker compose up --build -d
+```
 
----
+**Initialize App:**
 
-## Database Design (ERD Placeholder)
+```bash
+docker compose exec web python src/manage.py migrate
+docker compose exec web python src/manage.py createsuperuser
+```
 
-Tables planned:
+### Option 2: Local Python Environment
 
-| Table                 | Description                          |
-| --------------------- | ------------------------------------ |
-| accounts_user         | Custom user model for authentication |
-| categories_category   | Product categories                   |
-| products_product      | Products catalog                     |
-| products_productimage | Product images                       |
+See `docs/README.md` for manual installation steps.
 
-> **Note:** Full ERD diagram will be added once models are finalized.
+## Documentation
 
----
+### API Specification
 
-## API Endpoints (Placeholder)
+- **Swagger UI**: http://localhost:8000/docs/
+- **ReDoc**: http://localhost:8000/redoc/
+- **Postman Collection**: Available in `docs/api/postman_collection.json`
 
-| Method | Endpoint                | Description                               |
-| ------ | ----------------------- | ----------------------------------------- |
-| POST   | /api/accounts/register/ | Register a new user                       |
-| POST   | /api/accounts/login/    | Login and get JWT                         |
-| GET    | /api/products/          | List products with filter, sort, paginate |
-| POST   | /api/products/          | Add new product                           |
-| GET    | /api/categories/        | List categories                           |
-| POST   | /api/categories/        | Add new category                          |
+### Architecture
 
-> Endpoints will be expanded with actual paths and parameters as development progresses.
+Database Schema (ERD) and System Design notes are located in the `docs/` directory.
 
----
+## Testing & CI/CD
 
-## Git Workflow
+The project enforces code quality via automated pipelines.
 
-* **Branching:** `feature/<feature-name>` → PR → merge to `develop`
-* **Commits:** Use conventional commits:
-  * `feat:` new feature
-  * `fix:` bug fix
-  * `docs:` documentation
-  * `chore:` minor updates
-  * `perf:` performance improvements
+### Running Tests Locally
 
----
+```bash
+# Run all unit tests
+docker compose exec web python src/manage.py test src
 
-## Future Enhancements
+# Run integration tests (requires Docker)
+bash scripts/test_api.sh
+```
 
-* JWT Authentication for users
-* Celery + RabbitMQ for notifications
-* Kubernetes for container orchestration
-* CI/CD pipelines with Jenkins
-* Unit & integration testing
-* Production-ready deployment
+### Pipelines
 
----
+- **GitHub Actions**: Runs linting (flake8) and unit tests on every Pull Request.
+- **Jenkins**: Handles building Docker images and deploying to Kubernetes on merge to main.
 
-## Notes
+## Future Roadmap
 
-* This README serves as a **living document**, updated as the project progresses.
-* ERD diagrams, API specifications, and CI/CD configuration will be added in later phases.
+While the core e-commerce functionality is complete, the following features are planned for the next major release:
+
+### 1. Payment Integration
+
+- **Stripe/PayPal API**: Secure payment processing.
+- **Webhooks**: Handling payment success/failure events asynchronously.
+- **Refunds**: Admin dashboard for processing refunds.
+
+### 2. Product Reviews & Ratings
+
+- **User Feedback**: Allow verified purchasers to leave text reviews and star ratings.
+- **Aggregations**: Calculate average product ratings dynamically.
+- **Moderation**: Admin tools to approve/flag reviews.
+
+### 3. Wishlist Functionality
+
+- **Saved Items**: Allow users to save products for later without adding them to the cart.
+- **Stock Alerts**: Notify users when wishlist items come back in stock.
+
+### 4. Advanced Search
+
+- **Elasticsearch**: Integration for full-text search, fuzzy matching, and faster filtering for large catalogs.
+
+## Contributing
+
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`).
+4. Push to the branch (`git push origin feature/amazing-feature`).
+5. Open a Pull Request.

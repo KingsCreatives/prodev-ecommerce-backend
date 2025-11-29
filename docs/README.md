@@ -50,6 +50,7 @@ Key architectural decisions:
 - **Serializers:** Nested serializers provide rich API responses (e.g., orders include items and product details).  
 - **Service Layer Pattern:** Complex business logic (e.g., atomic order creation, stock adjustments) is placed in model methods or service functions to keep views simple.
 
+**Location:** `docs/diagrams/architectural-diagram.png`
 ---
 
 ### Authentication & Authorization (JWT)
