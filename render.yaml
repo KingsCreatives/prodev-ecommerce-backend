@@ -5,6 +5,7 @@ databases:
     plan: free
 
 services:
+  
   - type: web
     name: prodev-backend
     env: docker
@@ -53,6 +54,7 @@ services:
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
         value: "*"
+      
       - key: DJANGO_SECRET_KEY
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
@@ -61,12 +63,15 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-    startCommand: "python -m gunicorn src.core.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
+    
+    dockerCommand: "python -m gunicorn src.core.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
 
   - type: redis
     name: prodev-redis
     plan: free
     ipAllowList: [] 
+
+  
   - type: worker
     name: prodev-worker
     env: docker
@@ -119,4 +124,5 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-    startCommand: "celery -A src.core.celery worker --loglevel=info"
+    
+    dockerCommand: "celery -A src.core.celery worker --loglevel=info"
