@@ -5,7 +5,7 @@ databases:
     plan: free
 
 services:
-  # 1. Combined Web + Worker Service
+  
   - type: web
     name: prodev-backend
     env: docker
@@ -54,7 +54,7 @@ services:
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
         value: "*"
-      # SECURE: Ensure these are set in Render Dashboard
+     
       - key: DJANGO_SECRET_KEY
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
@@ -63,11 +63,9 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-    # FIX: Run Celery in background (&) then Gunicorn in foreground. 
-    # Using sh -c avoids permission issues with external script files.
-    dockerCommand: "sh -c 'celery -A src.core.celery worker --loglevel=info & gunicorn src.core.wsgi:application --bind 0.0.0.0:$PORT --workers 2'"
+    
+    dockerCommand: "sh -c 'python -m celery -A src.core.celery worker --loglevel=info & python -m gunicorn src.core.wsgi:application --bind 0.0.0.0:$PORT --workers 2'"
 
-  # 2. Redis Service
   - type: redis
     name: prodev-redis
     plan: free
