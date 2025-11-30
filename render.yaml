@@ -5,7 +5,6 @@ databases:
     plan: free
 
 services:
-  
   - type: web
     name: prodev-backend
     env: docker
@@ -54,7 +53,6 @@ services:
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
         value: "*"
-     
       - key: DJANGO_SECRET_KEY
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
@@ -63,8 +61,8 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-    
-    dockerCommand: "sh -c 'python -m celery -A src.core.celery worker --loglevel=info & python -m gunicorn src.core.wsgi:application --bind 0.0.0.0:$PORT --workers 2'"
+
+    dockerCommand: "./scripts/start_render.sh"
 
   - type: redis
     name: prodev-redis

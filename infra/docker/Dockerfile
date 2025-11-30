@@ -16,6 +16,10 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip
 RUN pip install --user -r /app/requirements.txt
 
+COPY scripts /app/scripts
+
+RUN chmod +x /app/scripts/start_render.sh
+
 COPY src /app/src
 
 RUN mkdir -p /app/static
