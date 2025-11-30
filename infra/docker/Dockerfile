@@ -20,8 +20,6 @@ COPY scripts /app/scripts
 RUN dos2unix /app/scripts/start_render.sh
 RUN chmod +x /app/scripts/start_render.sh
 
-COPY manage.py /app/manage.py
-
 COPY src /app/src
 
 RUN mkdir -p /app/static
