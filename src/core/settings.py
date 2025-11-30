@@ -30,6 +30,12 @@ DEBUG = os.environ.get('DJANGO_DEBUG') == 'True'
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 
+try:
+    print(f"DEBUG: RAW_ENV_VAR: {os.environ.get('DJANGO_ALLOWED_HOSTS')}")
+    print(f"DEBUG: FINAL_LIST: {ALLOWED_HOSTS}")
+except Exception as e:
+    print(f"DEBUG Error: {e}")
+
 CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
 CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
 CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")

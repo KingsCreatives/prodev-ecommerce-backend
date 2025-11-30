@@ -16,12 +16,12 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("api/admin/", admin.site.urls),
 
     path("api/docs/", schema_view.with_ui("swagger", cache_timeout=0)),
     path("api/redoc/", schema_view.with_ui("redoc", cache_timeout=0)),
 
-    path("api/login/", TokenObtainPairView.as_view(), name="gggogin"),
+    path("api/login/", TokenObtainPairView.as_view(), name="login"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
 
     path("api/auth/register/", RegisterView.as_view(), name="auth-register"),
