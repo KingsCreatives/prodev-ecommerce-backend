@@ -8,7 +8,7 @@ ENV PYTHONPATH=/app/src
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential libpq-dev gcc \
+  && apt-get install -y --no-install-recommends build-essential libpq-dev gcc dos2unix \
   && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
@@ -17,6 +17,8 @@ RUN pip install --upgrade pip
 RUN pip install --user -r /app/requirements.txt
 
 COPY scripts /app/scripts
+
+RUN dos2unix /app/scripts/start_render.sh
 
 RUN chmod +x /app/scripts/start_render.sh
 
