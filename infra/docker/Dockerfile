@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV PATH="/root/.local/bin:${PATH}"
+ENV PATH="/app/scripts:${PATH}"
 ENV PYTHONPATH=/app/src 
 
 WORKDIR /app
@@ -17,10 +17,10 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY scripts /app/scripts
-
 RUN dos2unix /app/scripts/start_render.sh
-
 RUN chmod +x /app/scripts/start_render.sh
+
+COPY manage.py /app/manage.py
 
 COPY src /app/src
 
