@@ -52,11 +52,16 @@ class Product(models.Model):
 
     @property
     def primary_image_url(self):
-        primary = self.images.filter(is_primary=True).first()
+
+        all_images = self.images.all()
+        primary = next((img for img in all_images if img.is_primary), None)
+
         if primary and primary.image:
             return primary.image.url
-        if self.image:
-            return self.image.url
+        
+        if all_images:
+            return all_images[0].image.url
+        
         return None
 
     def __str__(self):
