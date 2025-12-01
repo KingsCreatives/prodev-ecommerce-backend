@@ -4,6 +4,9 @@ set -e
 echo "Collecting static files..."
 python src/manage.py collectstatic --noinput
 
+echo "Applying database migrations..."
+python src/manage.py migrate
+
 echo "Starting deployment script..."
 
 echo "Starting Celery..."
