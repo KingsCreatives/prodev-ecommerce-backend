@@ -7,6 +7,7 @@ from utils.pagination import StandardResultsSetPagination
 from .models import Order, OrderItem
 from .serializers import OrderSerializer, OrderItemSerializer
 from products.models import Product
+from notifications.tasks import send_order_confirmation 
 from .docs import (
     list_summary, list_description, list_responses,
     retrieve_summary, retrieve_description, retrieve_responses,
@@ -31,6 +32,10 @@ class OrderViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return qs.all()
         return qs.filter(user=user)
+
+    def perform_create(self, serializer):
+        order = serializer.save(user=self.request.user)
+        transaction.on_commit(lambda: send_order_confirmation.delay(str(order.id)))
 
     @swagger_auto_schema(
         operation_summary=list_summary,
@@ -77,7 +82,6 @@ class OrderViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-
 class OrderItemViewSet(viewsets.ModelViewSet):
     serializer_class = OrderItemSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -112,7 +116,7 @@ class OrderItemViewSet(viewsets.ModelViewSet):
             unit_price = product.price
 
             item = OrderItem(order=order, product=product, quantity=quantity, unit_price=unit_price)
-            item.save()  # total_price is computed inside save()
+            item.save() 
 
             order.update_total()
 
