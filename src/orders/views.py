@@ -7,6 +7,7 @@ from utils.pagination import StandardResultsSetPagination
 from .models import Order, OrderItem
 from .serializers import OrderSerializer, OrderItemSerializer
 from products.models import Product
+# Import the notification task
 from notifications.tasks import send_order_confirmation 
 from .docs import (
     list_summary, list_description, list_responses,

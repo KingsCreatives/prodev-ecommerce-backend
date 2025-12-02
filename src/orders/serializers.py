@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Order, OrderItem
 from products.serializers import ProductSerializer
 from products.models import Product
+
 class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
     product_id = serializers.UUIDField(write_only=True)
@@ -45,8 +46,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         items_data = validated_data.pop('order_items')
-        user = self.context['request'].user
+        user = validated_data.pop('user', None) 
         
+        if user is None:
+            user = self.context['request'].user
+    
         order = Order.objects.create(user=user, **validated_data)
 
         for item in items_data:
