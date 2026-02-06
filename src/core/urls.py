@@ -23,8 +23,8 @@ urlpatterns = [
     path('', index, name='home'),
     path("api/admin/", admin.site.urls),
 
-    path("api/docs/", schema_view.with_ui("swagger", cache_timeout=0)),
-    path("api/redoc/", schema_view.with_ui("redoc", cache_timeout=0)),
+    path("api/docs/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+    path("api/redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 
     path("api/auth/login/", TokenObtainPairView.as_view(), name="auth-login"),
     path("api/auth/register/", RegisterView.as_view(), name="auth-register"),

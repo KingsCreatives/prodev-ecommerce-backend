@@ -11,6 +11,7 @@ click-repl==0.3.0
 cloudinary==1.44.1
 colorama==0.4.6
 cron_descriptor==2.0.6
+dj-database-url==3.1.2
 Django==5.2.8
 django-celery-beat==2.8.1
 django-cloudinary-storage==0.3.0
@@ -19,6 +20,7 @@ django-timezone-field==7.1
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
 drf-yasg==1.21.11
+gunicorn==25.1.0
 idna==3.11
 inflection==0.5.1
 iniconfig==2.3.0
@@ -37,6 +39,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 pytz==2025.2
 PyYAML==6.0.3
+redis==7.2.1
 requests==2.32.5
 six==1.17.0
 sqlparse==0.5.3
@@ -46,6 +49,4 @@ uritemplate==4.2.0
 urllib3==2.5.0
 vine==5.1.0
 wcwidth==0.2.14
-gunicorn
-redis
-whitenoise
+whitenoise==6.12.0

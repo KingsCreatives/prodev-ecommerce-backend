@@ -1,0 +1,27 @@
+app = 'prodev-ecommerce-backend'
+primary_region = 'cdg'
+
+[build]
+  dockerfile = 'infra/docker/Dockerfile'
+
+[processes]
+  web = "gunicorn src.core.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+  worker = "celery -A src.core.celery worker --loglevel=info"
+  beat = "celery -A src.core.celery beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+
+[deploy]
+  # Simplified: Files are already in the image, just run migrations
+  release_command = "python src/manage.py migrate --noinput"
+
+[http_service]
+  internal_port = 8000 
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['web']
+
+[[vm]]
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 512

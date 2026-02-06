@@ -1,6 +1,6 @@
 # ProDev Nexus E-Commerce Backend
 
-**Live Demo URL:** [https://prodev-backend.onrender.com/](https://prodev-backend.onrender.com/)
+**Live Demo URL:** [Live preview](https://prodev-ecommerce-backend.fly.dev/)
 
 ---
 
