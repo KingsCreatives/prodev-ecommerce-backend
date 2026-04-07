@@ -1,9 +1,10 @@
+from django.urls import path , include
 from rest_framework import routers
 from addresses.views import AddressViewSet
 from carts.views import CartViewSet, CartItemViewSet
 from categories.views import CategoryViewSet
 from notifications.views import NotificationViewSet
-from orders.views import OrderViewSet, OrderItemViewSet
+from orders.views import OrderViewSet, OrderItemViewSet, PaystackInitializeView, paystack_webhook
 from products.views import ProductViewSet, ProductImageViewSet
 
 router = routers.DefaultRouter()
@@ -18,4 +19,9 @@ router.register(r"order-items", OrderItemViewSet, basename="Order-Item")
 router.register(r"products", ProductViewSet, basename="products")
 router.register(r"product-images", ProductImageViewSet, basename="Product-Images")
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('', include(router.urls)),
+
+    path('pay/init/', PaystackInitializeView.as_view(), name='pay-init'),
+    path('pay/webhook/', paystack_webhook, name='pay-webhook'),
+]

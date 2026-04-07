@@ -7,6 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
 
 DEBUG = os.environ.get('DJANGO_DEBUG') == 'True'
 
@@ -169,10 +170,14 @@ SIMPLE_JWT = {
 }
 
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+else:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 
 CSRF_TRUSTED_ORIGINS = ["https://prodev-ecommerce-backend.fly.dev"]

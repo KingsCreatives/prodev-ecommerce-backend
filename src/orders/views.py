@@ -1,13 +1,19 @@
+import requests, hmac, json, hashlib
 from rest_framework import viewsets, permissions
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from drf_yasg.utils import swagger_auto_schema
 from django.db import transaction
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
+from django.conf import settings
+from .tasks import fulfill_order_task
 from utils.pagination import StandardResultsSetPagination
 from .models import Order, OrderItem
 from .serializers import OrderSerializer, OrderItemSerializer
 from products.models import Product
-# Import the notification task
 from notifications.tasks import send_order_confirmation 
 from .docs import (
     list_summary, list_description, list_responses,
@@ -159,3 +165,37 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
+    
+class PaystackInitializeView(APIView):
+    def post(self, request):
+        order_id = request.data.get("order_id")
+        order = Order.objects.get(id=order_id, user=request.user)
+        
+        # In Pesewas
+        amount = int(order.total_price * 100)
+
+        response = requests.post(
+            "https://api.paystack.co/transaction/initialize",
+            headers={"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"},
+            json={
+                "email": request.user.email,
+                "amount": amount,
+                "currency": "GHS",
+                "metadata": {"order_id": str(order.id)}
+            }
+        )
+        return Response(response.json())
+
+@csrf_exempt
+def paystack_webhook(request):
+    signature = request.META.get('HTTP_X_PAYSTACK_SIGNATURE')
+    payload = request.body
+    hashed = hmac.new(settings.PAYSTACK_SECRET_KEY.encode(), payload, hashlib.sha512).hexdigest()
+
+    if hashed == signature:
+        data = json.loads(payload)
+        if data['event'] == 'charge.success':
+            order_id = data['data']['metadata']['order_id']
+            Order.objects.filter(id=order_id).update(status='paid')
+            
+    return HttpResponse(status=200)
