@@ -56,9 +56,9 @@ This application is deployed on the **Render Free Tier**. Please be aware of the
 
 ### Live Endpoints:
 
-- **Landing Page:** [https://prodev-backend.onrender.com/](https://prodev-backend.onrender.com/)
-- **Swagger Docs:** [https://prodev-backend.onrender.com/api/docs/](https://prodev-backend.onrender.com/api/docs/)
-- **Admin Panel:** [https://prodev-backend.onrender.com/api/admin/](https://prodev-backend.onrender.com/api/admin/)
+- **Landing Page:** [https://prodev-backend.onrender.com/](https://prodev-ecommerce-backend.fly.dev/)
+- **Swagger Docs:** [https://prodev-backend.onrender.com/api/docs/](https://prodev-ecommerce-backend.fly.dev/api/docs/)
+- **Admin Panel:** [https://prodev-backend.onrender.com/api/admin/](https://https://prodev-ecommerce-backend.fly.dev/api/admin/)
 
 ---
 
