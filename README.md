@@ -1,6 +1,6 @@
 # ProDev Nexus E-Commerce Backend
 
-**Live Demo URL:** [Live preview](https://prodev-ecommerce-backend.fly.dev/)
+**Live Demo:** <a href="https://prodev-ecommerce-backend.fly.dev/" target="_blank">https://prodev-ecommerce-backend.fly.dev/</a>
 
 ---
 
@@ -8,7 +8,7 @@
 
 ProDev Nexus is a production-grade, scalable API built for modern e-commerce platforms. It leverages Django 5 and Django REST Framework to provide a robust suite of features including secure authentication, product management, real-time notifications, and atomic order processing.
 
-The system is designed with data integrity and concurrency in mind, utilizing atomic transactions, row-level locking, and asynchronous background processing via Celery & Redis. It is fully containerized and ready for cloud deployment.
+The system is designed with data integrity and concurrency in mind, utilizing atomic transactions, row-level locking, and asynchronous background processing via Celery & Redis. It is fully containerized and deployed on Fly.io.
 
 ---
 
@@ -16,7 +16,7 @@ The system is designed with data integrity and concurrency in mind, utilizing at
 
 Watch the system in action: **Async Order Processing & Architecture Walkthrough**
 
-**Video Demo URL:** [prodev-backend-video-demo](https://drive.google.com/file/d/1eghL44hZWWijs1ka9fRg-dkeAUtEI19d/view?usp=drive_link)
+**Video Demo:** <a href="https://drive.google.com/file/d/1eghL44hZWWijs1ka9fRg-dkeAUtEI19d/view?usp=drive_link" target="_blank">Watch on Google Drive</a>
 
 ---
 
@@ -28,7 +28,7 @@ Watch the system in action: **Async Order Processing & Architecture Walkthrough*
 - **Order Processing:** Atomic order creation with nested item support, price snapshotting, and automatic stock adjustment.
 - **Notifications:** Dual-channel system (In-App + Email) powered by Celery.
 - **Infrastructure:** Fully dockerized environment with Nginx/Gunicorn, PostgreSQL, Redis, Celery Workers and RabbitMQ.
-- **CI/CD**: Automated testing and deployment pipelines using GitHub Actions and Jenkins.
+- **CI/CD:** Automated testing and deployment pipelines using GitHub Actions and Jenkins.
 - **Developer Hub:** Includes a dedicated landing page and interactive Swagger documentation.
 
 ---
@@ -42,23 +42,16 @@ Watch the system in action: **Async Order Processing & Architecture Walkthrough*
 | Database       | PostgreSQL 15   | Relational data store          |
 | Async Queue    | Celery 5        | Task queue manager             |
 | Message Broker | Redis 7         | In-memory broker for Celery    |
-| Deployment     | Docker & Render | Container orchestration & PaaS |
+| Deployment     | Docker & Fly.io | Container orchestration & PaaS |
 | Media          | Cloudinary      | Cloud image storage            |
 
 ---
 
-## 🌍 Deployment Notes (Render Free Tier)
+## 🌍 Live Endpoints
 
-This application is deployed on the **Render Free Tier**. Please be aware of the following limitations when testing:
-
-- **Cold Start Latency:** The server "sleeps" after 15 minutes of inactivity. The first request may take up to 50 seconds to wake up the instance. Please be patient; subsequent requests will be instant.
-- **Resource Limits:** The free instance has 512MB RAM. Heavy image uploads may occasionally time out.
-
-### Live Endpoints:
-
-- **Landing Page:** [https://prodev-backend.onrender.com/](https://prodev-ecommerce-backend.fly.dev/)
-- **Swagger Docs:** [https://prodev-backend.onrender.com/api/docs/](https://prodev-ecommerce-backend.fly.dev/api/docs/)
-- **Admin Panel:** [https://prodev-backend.onrender.com/api/admin/](https://https://prodev-ecommerce-backend.fly.dev/api/admin/)
+- **Landing Page:** <a href="https://prodev-ecommerce-backend.fly.dev/" target="_blank">https://prodev-ecommerce-backend.fly.dev/</a>
+- **Swagger Docs:** <a href="https://prodev-ecommerce-backend.fly.dev/api/docs/" target="_blank">https://prodev-ecommerce-backend.fly.dev/api/docs/</a>
+- **Admin Panel:** <a href="https://prodev-ecommerce-backend.fly.dev/api/admin/" target="_blank">https://prodev-ecommerce-backend.fly.dev/api/admin/</a>
 
 ---
 
@@ -166,7 +159,7 @@ prodev-ecommerce-backend/
 
 ---
 
-## Future Roadmap
+## 🔮 Future Roadmap
 
 While the core e-commerce functionality is complete, the following features are planned for the next major release:
 
